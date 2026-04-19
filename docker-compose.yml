@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  xyz-monitor:
+    build: .
+    container_name: xyzjk
+    ports:
+      - "6821:6821"
+    volumes:
+      - ./data:/app/data
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
