@@ -6,7 +6,8 @@ LABEL org.opencontainers.image.description="xyzjk arm/amd multi-arch"
 
 WORKDIR /app
 
-RUN apk add --no-cache tzdata && \
+# 安装 tini 用于正确处理信号
+RUN apk add --no-cache tini tzdata && \
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apk del tzdata
@@ -24,4 +25,5 @@ VOLUME ["/app/data"]
 
 EXPOSE 6821
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "server.js"]

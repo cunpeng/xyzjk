@@ -9,13 +9,7 @@ services:
     volumes:
       - ./data:/app/data
     restart: unless-stopped
-    stop_grace_period: 5s
+    stop_grace_period: 10s
     environment:
       - TZ=Asia/Shanghai
       - NODE_OPTIONS=--max-old-space-size=64
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:6821/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
