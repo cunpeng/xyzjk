@@ -1,0 +1,76 @@
+name: Auto Increment Version and Push to Docker Hub
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '**.md'
+      - 'VERSION'          # 避免 VERSION 更新触发构建
+      - '.gitignore'
+      - 'LICENSE'
+      # 可继续添加其他不希望触发构建的文件或路径
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Read current version and increment
+        id: version
+        run: |
+          CURRENT=$(cat VERSION)
+          echo "Current version: $CURRENT"
+          MAJOR=$(echo $CURRENT | cut -d. -f1)
+          MINOR=$(echo $CURRENT | cut -d. -f2)
+          NEW_MINOR=$((MINOR + 1))
+          NEW_VERSION="${MAJOR}.$(printf "%02d" $NEW_MINOR)"
+          echo "New version: $NEW_VERSION"
+          echo "CURRENT_VERSION=$CURRENT" >> $GITHUB_OUTPUT
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update VERSION file
+        run: |
+          echo "${{ steps.version.outputs.NEW_VERSION }}" > VERSION
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore: auto-increment version to ${{ steps.version.outputs.NEW_VERSION }} [skip ci]"
+          git push
+
+      - name: Build and push multi-platform images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/xyzjk:${{ steps.version.outputs.NEW_VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/xyzjk:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.NEW_VERSION }}
+            org.opencontainers.image.description="xyzjk auto-incremented version"
