@@ -6,7 +6,15 @@ LABEL org.opencontainers.image.description="xyzjk arm/amd multi-arch"
 
 WORKDIR /app
 
-COPY package.json ./
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone && \
+    apk del tzdata
+
+COPY package*.json ./
+
+RUN npm install --production
+
 COPY server.js ./
 
 # 创建数据持久化目录
