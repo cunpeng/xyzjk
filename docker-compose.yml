@@ -11,3 +11,6 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
+      - NODE_OPTIONS=--max-old-space-size=128
+    mem_limit: 256m
+    memswap_limit: 256m
