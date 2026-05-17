@@ -42,9 +42,11 @@ jobs:
         run: |
           CURRENT=$(cat VERSION)
           echo "Current version: $CURRENT"
+          # 分割主版本号和次版本号（假设格式 x.yy）
           MAJOR=$(echo $CURRENT | cut -d. -f1)
           MINOR=$(echo $CURRENT | cut -d. -f2)
-          NEW_MINOR=$((MINOR + 1))
+          NEW_MINOR=$((10#$MINOR + 1))   # 使用10#强制解释为十进制，避免08被当作八进制
+          # 保持两位数字，例如 1.09 -> 1.10
           NEW_VERSION="${MAJOR}.$(printf "%02d" $NEW_MINOR)"
           echo "New version: $NEW_VERSION"
           echo "CURRENT_VERSION=$CURRENT" >> $GITHUB_OUTPUT
