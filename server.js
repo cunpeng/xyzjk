@@ -584,3 +584,21 @@ server.listen(PORT, () => {
     console.log(`XYZ 域名监控服务已启动: http://0.0.0.0:${PORT}`);
     addLog('🚀 服务已启动，端口 ' + PORT);
 });
+
+// 优雅关闭处理
+process.on('SIGTERM', () => {
+    console.log('收到 SIGTERM 信号，正在保存状态...');
+    if (timerId) clearTimeout(timerId);
+    server.close(() => {
+        console.log('服务器已关闭');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('收到 SIGINT 信号，正在保存状态...');
+    if (timerId) clearTimeout(timerId);
+    server.close(() => {
+        process.exit(0);
+    });
+});
