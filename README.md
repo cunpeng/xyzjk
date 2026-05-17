@@ -14,7 +14,7 @@ docker run -d \
   -p 6821:6821 \
   -v xyzjk-data:/app/data \
   --restart always \
-  cunpeng/xyzjk:1.01
+  cunpeng/xyzjk:1.02
 ```
 
 ## 📝 更新日志
